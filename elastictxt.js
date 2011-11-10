@@ -5,10 +5,10 @@
  *      vert: `Boolean` : Expand vertically :: Optional (default: true)
  *      horz: `Boolean` : Expand horizonally :: Optional (default: false)
  *      height: `Integer` : Beginning static height :: Optional
- *      max_height: `Integer` : Maximum height of node :: Optional
- *      min_height: `Integer` : Minimum height of node :: Optional
- *      max_width: `Integer` : Maximum width of node :: Optional
- *      min_width: `Integer` : Minimum width of node :: Optional
+ *      maxHeight: `Integer` : Maximum height of node :: Optional
+ *      minHeight: `Integer` : Minimum height of node :: Optional
+ *      maxWidth: `Integer` : Maximum width of node :: Optional
+ *      minWidth: `Integer` : Minimum width of node :: Optional
  *      width: `Integer` : Beginning static width :: Optional
  *      resize: 'Boolean' : CSS Resize :: Optional (default: false)
  *      overflow: 'String' : CSS Overflow :: Optional (default: hidden)
@@ -48,27 +48,55 @@ ElasticText.prototype.PRE_STYLE = ['top: -10000px; left: -10000px; white-space:p
 ElasticText.prototype.getComputedStyle = null;
 
 ElasticText.prototype._init = function(config){
-    if(!config.node || this.TEXTAREA.indexOf(config.node.nodeName.toLower()) < 0){
+    if(!config.node || this.TEXTAREA.indexOf(config.node.nodeName.toLowerCase()) < 0){
         //sorry peeps, we're only supporting TEXTAREA here.
-        return;
+        throw new Error("node is required");
     }
     //we're gonna need this
     this.getComputedStyle = this._setGetComputedStyle();
     //setup config
+    this._node = config.node;
+    //setup styles
+    if(config['minHeight']){
+        this._node.style.minHeight = parseInt(config.minHeight, 10) || this._getNodeHeight();
+    }
+    
+    if(config['maxHeight']){
+        this._node.style.maxHeight =  parseInt(config.maxHeight, 10) || this._getNodeHeight();
+    }
+
+    if(config['height']){
+        this._node.style.height = parseInt(config.height, 10) || this._getNodeHeight();
+    }
+
+    if(config['minWidth']){
+        this._node.style.minWidth = parseInt(config.minWidth, 10) || this._getNodeWidth();
+    }
+    
+    if(config['maxWidth']){
+        this._node.style.maxWidth =  parseInt(config.maxWidth, 10) || this._getNodeWidth();
+    }
+
+    if(config['width']){
+        this._node.style.width = parseInt(config.width, 10) || this._getNodeWidth();
+    }
+
+    this._node.style.resize = config['resize'] || 'none';
+    this._node.style.overflow = config['overflow'] || 'hidden';
+    this._createCopyNode();
+    //this._createListeners();
+    this.update();
+
 };
 
 
 ElasticText.prototype._setGetComputedStyle = function(){
-    if(window && 'getComputedStyle' in window){
-        return window.getComputedStyle;
-    }
-
     return function(node, att) {
         var val = '',
-            doc = node[OWNER_DOCUMENT];
+            doc = node[this.OWNER_DOCUMENT];
 
-        if (node[STYLE] && doc[DEFAULT_VIEW] && doc[DEFAULT_VIEW][GET_COMPUTED_STYLE]) {
-            val = doc[DEFAULT_VIEW][GET_COMPUTED_STYLE](node, null)[att];
+        if (node[this.STYLE] && doc[this.DEFAULT_VIEW] && doc[this.DEFAULT_VIEW][this.GET_COMPUTED_STYLE]) {
+            val = doc[this.DEFAULT_VIEW][this.GET_COMPUTED_STYLE](node, null)[att];
         }
         return val;
     };
@@ -108,12 +136,12 @@ ElasticText.prototype._createCopyNode = function(){
     cn.setAttribute('style', this.PRE_STYLE);
     document.body.appendChild(cn);
     //mimick styles?
-    this._copyNode = copyNode;
+    this._copyNode = cn;
 };
 
 ElasticText.prototype._updateCopyNode = function(){
     var txt = this._node.value + "\n ";
-    //check for ie and replace with \r's
+    //TODO: check for ie and replace with \r's
     if(this._copyTextNode){
         //remove from dom.
         this._remove(this._copyTextNode);
@@ -123,19 +151,19 @@ ElasticText.prototype._updateCopyNode = function(){
 };
 
 ElasticText.prototype._getNodeHeight = function(){
-    return parseInt(this._getComputedStyle(this._node, this.height), 10);
+    return parseInt(this.getComputedStyle(this._node, this.height), 10);
 };
 
 ElasticText.prototype._getNodeWidth = function(){
-    return parseInt(this._getComputedStyle(this._node, this.width), 10);
+    return parseInt(this.getComputedStyle(this._node, this.width), 10);
 };
 
 ElasticText.prototype._getCopyNodeHeight = function(){
-    return parseInt(this._getComputedStyle(this._copyNode, this.height), 10);
+    return parseInt(this.getComputedStyle(this._copyNode, this.height), 10);
 };
 
 ElasticText.prototype._getCopyNodeWidth = function(){
-    return parseInt(this._getComputedStyle(this._copyNode, this.WIDTH), 10);
+    return parseInt(this.getComputedStyle(this._copyNode, this.WIDTH), 10);
 };
 
 ElasticText.prototype._remove = function(node){
@@ -155,5 +183,7 @@ ElasticText.prototype.update = function(){
             h = ((minh && ch < minh) ? minh : ch) + this.PX,
             overflow = ((minh && ch < minh) ? this.AT : this.HIDDEN) + this.PX;
             //set styles
+            this._node.style.height = h + this.PX;
+            this._node.style.overflow = overflow;
     }
 };
