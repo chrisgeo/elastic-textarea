@@ -128,6 +128,8 @@ ElasticText.prototype._destructor = function(){
 
 ElasticText.prototype._createListeners = function(){
     this._keyupListener = this._addEvent(this._node, 'keyup', this.update);
+    this._keyupListener = this._addEvent(this._node, 'keypress', this.update);
+    this._keyupListener = this._addEvent(this._node, 'keydown', this.update);
     //this._pasteListener = this._addEvent(this._node, 'paste', this.update);
 };
 
