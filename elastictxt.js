@@ -1,17 +1,17 @@
 /**
  * ElasticTextbox that expands vertically or horizonally
  *  config:
- *      node: `HTMLDOMElement` : DOM Element to attach to :: Required
- *      vert: `Boolean` : Expand vertically :: Optional (default: true)
- *      horz: `Boolean` : Expand horizonally :: Optional (default: false)
- *      height: `Integer` : Beginning static height :: Optional
- *      maxHeight: `Integer` : Maximum height of node :: Optional
- *      minHeight: `Integer` : Minimum height of node :: Optional
- *      maxWidth: `Integer` : Maximum width of node :: Optional
- *      minWidth: `Integer` : Minimum width of node :: Optional
- *      width: `Integer` : Beginning static width :: Optional
- *      resize: 'Boolean' : CSS Resize :: Optional (default: false)
- *      overflow: 'String' : CSS Overflow :: Optional (default: hidden)
+ *      node: {HTMLDOMElement} : DOM Element to attach to :: Required
+ *      vert: {Boolean} : Expand vertically :: Optional (default: true)
+ *      horz: {Boolean} : Expand horizonally :: Optional (default: false)
+ *      height: {Integer} : Beginning static height :: Optional
+ *      maxHeight: {Integer} : Maximum height of node :: Optional
+ *      minHeight: {Integer} : Minimum height of node :: Optional
+ *      maxWidth: {Integer} : Maximum width of node :: Optional
+ *      minWidth: {Integer} : Minimum width of node :: Optional
+ *      width: {Integer} : Beginning static width :: Optional
+ *      resize: {Boolean} : CSS Resize :: Optional (default: false)
+ *      overflow: {string} : CSS Overflow :: Optional (default: hidden)
  *      NOTE: most of these values should be set with CSS
  **/
 function ElasticText(config){
@@ -21,6 +21,19 @@ function ElasticText(config){
 //////////////////////
 //static vars
 //////////////////////
+/**
+ * Textarea node
+ * @value {HTMLDOMElement#TEXTAREA} _node : Textarea attached to object
+ *
+ **/
+ElasticText.prototype._node = null;
+/**
+ * PRE node
+ * @value {HTMLDOMElement#PRE} _copyNode : PRE node attached to object
+ *
+ **/
+ElasticText.prototype._copyNode = null;
+//static strings
 ElasticText.prototype.PX = 'px';
 ElasticText.prototype.AUTO = 'auto';
 ElasticText.prototype.HIDDEN = 'hidden';
@@ -35,8 +48,6 @@ ElasticText.prototype.PARENT_WINDOW = 'parentWindow';
 ElasticText.prototype.PARENT = 'parentNode';
 ElasticText.prototype.STYLE = 'style';
 ElasticText.prototype.GET_COMPUTED_STYLE = 'getComputedStyle';
-ElasticText.prototype._node = null;
-ElasticText.prototype._copyNode = null;
 ElasticText.prototype.PRE = 'pre';
 ElasticText.prototype.PRE_STYLE = ['top: -10000px; left: -10000px; white-space:pre-wrap;white-space:-pre-wrap;',
                                    'white-space:-o-pre-wrap;word-wrap:break-word;_white-space:pre;position:absolute;visibility:hidden;',
@@ -65,6 +76,23 @@ ElasticText.prototype.STYLE_MIMICS = [
 //////////////////////
 ElasticText.prototype.getComputedStyle = null;
 
+/**
+ * Intialization function
+ * @private
+ * @method _init
+ * @param {object} config config with the options:
+ *      node: {HTMLDOMElement} : DOM Element to attach to :: Required
+ *      vert: {Boolean} : Expand vertically :: Optional (default: true)
+ *      horz: {Boolean} : Expand horizonally :: Optional (default: false)
+ *      height: {Integer} : Beginning static height :: Optional
+ *      maxHeight: {Integer} : Maximum height of node :: Optional
+ *      minHeight: {Integer} : Minimum height of node :: Optional
+ *      maxWidth: {Integer} : Maximum width of node :: Optional
+ *      minWidth: {Integer} : Minimum width of node :: Optional
+ *      width: {Integer} : Beginning static width :: Optional
+ *      resize: {Boolean} : CSS Resize :: Optional (default: false)
+ *      overflow: {string} : CSS Overflow :: Optional (default: hidden)
+**/
 ElasticText.prototype._init = function(config){
     if(!config.node || this.TEXTAREA.indexOf(config.node.nodeName.toLowerCase()) < 0){
         //sorry peeps, we're only supporting TEXTAREA here.
@@ -108,7 +136,13 @@ ElasticText.prototype._init = function(config){
     this.update();
 };
 
-
+/**
+ * Set us up the bomb! Uses getComputedStyle to find attribute values
+ * @private
+ * @method _setGetComputedStyle
+ * @return {string}
+ *
+ **/
 ElasticText.prototype._setGetComputedStyle = function(){
     return function(node, att) {
         var val = '',
@@ -121,11 +155,23 @@ ElasticText.prototype._setGetComputedStyle = function(){
     };
 };
 
+/**
+ * Destory the little world that is ElasticTextArea (instance)
+ * @private
+ * @method _destructor
+ *
+ **/
 ElasticText.prototype._destructor = function(){
     this._destoryCopyNode();
     this._destroyListeners();
 };
 
+/**
+ * Set up listeners on the node
+ * @private
+ * @method _destructor
+ *
+ **/
 ElasticText.prototype._createListeners = function(){
     this._keyupListener = this._addEvent(this._node, 'keyup', this.update);
     this._keyupListener = this._addEvent(this._node, 'keypress', this.update);
@@ -135,6 +181,13 @@ ElasticText.prototype._createListeners = function(){
     this._pasteListener = this._addEvent(this._node, 'cut', this.update);
 };
 
+/**
+ * Bind function and setup contexts 
+ * @method bind
+ * @param {function} f : Function to bind
+ * @param {object} c : Context to set to the function
+ * @param {Array} arguments : Pass arbitrary list of args to function
+ **/
 ElasticText.prototype.bind = function(f, c) {
     var xargs = arguments.length > 2 ?
             arguments.slice(2) : null;
@@ -146,6 +199,14 @@ ElasticText.prototype.bind = function(f, c) {
     };
 };
 
+/**
+ * Add an event listener
+ * @private
+ * @method _addEvent
+ * @param {HTMLDOMElement} node : Element to attach event to
+ * @param {string} event : Name of event to listen for
+ * @param {function} callback : Callback for listener
+ **/
 ElasticText.prototype._addEvent = function(node, event, callback){
     if (node.addEventListener){
         node.addEventListener(event, this.bind(callback, this), false);
@@ -154,6 +215,12 @@ ElasticText.prototype._addEvent = function(node, event, callback){
     }
 };
 
+/**
+ * Remove an event listener
+ * @private
+ * @method _detach
+ * @param {Event} event : Event object to detach
+ **/
 ElasticText.prototype._detach = function(event){
     if (node.addEventListener){
         node.removeEventListener(event, this.bind(callback, this), false);
@@ -161,7 +228,11 @@ ElasticText.prototype._detach = function(event){
         node.detachEvent(event, this.bind(callback, this));
     }
 };
-
+/**
+ * Destroy all listeners on object
+ * @private
+ * @method _destroyListeners
+ **/
 ElasticText.prototype._destroyListeners = function(){
     if(this._keyupListener){
         this._detach(this._keyupListener);
@@ -173,6 +244,11 @@ ElasticText.prototype._destroyListeners = function(){
     }
 };
 
+/**
+ * Creates the node to copy contents into
+ * @private
+ * @method _createCopyNode
+ **/
 ElasticText.prototype._createCopyNode = function(){
     var i = 0, len = this.STYLE_MIMICS.length,
         cn = document.createElement(this.PRE);
@@ -185,6 +261,11 @@ ElasticText.prototype._createCopyNode = function(){
     this._copyNode = cn;
 };
 
+/**
+ * Updates the node to copy contents into
+ * @private
+ * @method _updateCopyNode
+ **/
 ElasticText.prototype._updateCopyNode = function(){
     var txt = this._node.value + "\n ";
     //TODO: check for ie and replace with \r's
@@ -196,22 +277,48 @@ ElasticText.prototype._updateCopyNode = function(){
     this._copyNode.appendChild(this._copyTextNode);
 };
 
+/**
+ * Retrieve the height of the _node object
+ * @private
+ * @method _getNodeHeight
+ * @return {Integer}
+ **/
 ElasticText.prototype._getNodeHeight = function(){
     return parseInt(this.getComputedStyle(this._node, this.HEIGHT), 10);
 };
-
+/**
+ * Retrieve the width of the _node object
+ * @private
+ * @method _getNodeWidth
+ * @return {Integer}
+ **/
 ElasticText.prototype._getNodeWidth = function(){
     return parseInt(this.getComputedStyle(this._node, this.WIDTH), 10);
 };
-
+/**
+ * Retrieve the height of the _copyNode object
+ * @private
+ * @method _getCopyNodeHeight
+ * @return {Integer}
+ **/
 ElasticText.prototype._getCopyNodeHeight = function(){
     return parseInt(this.getComputedStyle(this._copyNode, this.HEIGHT), 10);
 };
-
+/**
+ * Retrieve the wight of the _copyNode object
+ * @private
+ * @method _getCopyNodeWight
+ * @return {Integer}
+ **/
 ElasticText.prototype._getCopyNodeWidth = function(){
     return parseInt(this.getComputedStyle(this._copyNode, this.WIDTH), 10);
 };
 
+/**
+ * Remove a node from the DOM
+ * @private
+ * @method _remove
+ **/
 ElasticText.prototype._remove = function(node){
     if(node && node[this.PARENT]){
         var parent = node[this.PARENT];
@@ -219,6 +326,11 @@ ElasticText.prototype._remove = function(node){
     }
 };
 
+/**
+ * Update the object and the attached nodes 
+ * @method update
+ *
+ **/
 ElasticText.prototype.update = function(){
     this._updateCopyNode();
     var nh = this._getNodeHeight(),
