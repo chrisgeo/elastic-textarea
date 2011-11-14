@@ -73,6 +73,10 @@ textarea {
     padding: 4px; /* illusion of about 2 characters from 'end' for default font sets */
 }
 ```
+#CREDIT
+A large amount of credit goes to [YUI](http://yuilibrary.com)
+
+And this cool YUI Gallery Plugin: [Elastic Textarea](https://github.com/jingoro/yui3-elastic-textarea)
 
 
 
