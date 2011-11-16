@@ -4,6 +4,8 @@ Expanding textarea that can expand horizontally or vertically depending on your 
 
 No need for any other javascript library.
 
+[Preview](http://chrisgeo.github.com/elastic-textarea/)
+
 #LICENSE
 Unless otherwise indicated, Source Code is licensed under MIT license.
 See further explanation attached in License Statement (distributed in the file
