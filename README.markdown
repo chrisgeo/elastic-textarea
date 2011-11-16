@@ -35,7 +35,7 @@ Pretty much do whatever you want with it, just link to the original source in yo
 ```
 
 ```javascript
-    new ElasticText({node: document.getElementById('#txt-expand')});
+    new ElasticText({node: document.getElementById('txt-expand')});
 ```
 
 ##CONFIG
